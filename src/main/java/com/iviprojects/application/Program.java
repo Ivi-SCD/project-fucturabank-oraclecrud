@@ -2,7 +2,9 @@ package com.iviprojects.application;
 
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Scanner;
 
 import com.iviprojects.dao.AccountDao;
 import com.iviprojects.dao.BankDao;
@@ -11,40 +13,250 @@ import com.iviprojects.dao.UserDao;
 import com.iviprojects.entities.Account;
 import com.iviprojects.entities.Bank;
 import com.iviprojects.entities.User;
+import com.iviprojects.util.database.DbAccountBalanceException;
+import com.iviprojects.util.database.DbNotFoundException;
+import com.iviprojects.util.database.DbUnexpectedException;
 
-public class Program {	
+public class Program {
 
+	static Scanner sc = new Scanner(System.in);
+	static UserDao userDao = DaoFactory.createUserDao();
+	static BankDao bankDao = DaoFactory.createBankDao();
+	static AccountDao accDao = DaoFactory.createAccountDao();
+	
 	public static void main(String[] args) throws ParseException {
-		UserDao userDao = DaoFactory.createUserDao();
-		BankDao bankDao = DaoFactory.createBankDao();
-		AccountDao accDao = DaoFactory.createAccountDao();
 		
-		User u1 = new User("Leticia Paixão", "31/9/2004", "12345678910");
-		User u2 = new User("Ivisson Pereira", "11/12/2003", "23456767890");
-		User u3 = new User("Lucas Martins", "26/02/2005", "34556789012");
+		instantiateBanks();
 		
+		/*
+		 * Developed by: Ivisson Pereira
+		 */
+		
+		loadMenu();
+	}
+	
+	private static void instantiateBanks () {
 		Bank b1 = new Bank("Santander", "90400888000142");
 		Bank b2 = new Bank("Bradesco", "60746948000112");
 		Bank b3 = new Bank("Itau", "60701190000104");
 		
-		Account ac1 = new Account(1111,5.0, "12345", u2, b1);
-		Account ac2 = new Account(2222,2000d, "12345", u1, b3);
-		Account ac3 = new Account(3333, 2500d, "12345", u3, b2);
-		
-		List <Account> accounts = Arrays.asList(ac1,ac2,ac3);
-		
-		accounts.forEach(accDao::insert);
-		
-		userDao.findUsersByBirthdate("01/01/2004").forEach(System.out::println);
-		userDao.findUsersWithInName("s").forEach(System.out::println);
-		System.out.println(userDao.findUserByCpf("12345678910"));
-		
-		System.out.println(bankDao.findByBankName("Santander"));
-		System.out.println(bankDao.findByCnpj("60701190000104"));
-		
-		accDao.findAccountsByBank(b3).forEach(System.out::println);
-		accDao.findAccountsByUser(u3).forEach(System.out::println);
-		System.out.println(accDao.findByNumber(11111));
-		
+		List <Bank> banks = Arrays.asList(b1,b2,b3);
+		banks.forEach(bankDao::insert);
 	}
+	
+	private static void loadMenu() throws ParseException {
+		try {
+			boolean bool = true;
+			while(bool) {
+				System.out.println("=-=-=-=-=-=-=--=-= WELCOME TO FUCTURABANK =-=-=-=-=-=-=--=-="
+						+ "\n1. Register User"
+						+ "\n2. User Already Registered"
+						+ "\n3. Exit");
+				
+				Integer option = sc.nextInt();
+				
+				switch(option) {
+					case 1:
+						System.out.print("\n=-=-=-=-= Register Menu -=-=--=-="
+								+ "\nName: ");
+						sc.nextLine();
+						String name = sc.nextLine();
+						
+						System.out.print("BirthDate (dd/MM/yyyy): ");
+						String birthdate = sc.nextLine();
+						
+						System.out.print("CPF (No semicolon): ");
+						String cpf = sc.nextLine();
+						
+						try {
+							userDao.findUserByCpf(cpf);
+							System.out.println("User already Registered!");
+							break;
+						} catch (DbUnexpectedException e) {
+							userDao.insert(new User(name, birthdate, cpf));
+							System.out.println("\nRegistration Completed!");
+							loadMenuFucturaBank(userDao.findUserByCpf(cpf));
+							break;
+						}
+					case 2:
+						System.out.println("\nCPF: ");
+						cpf = sc.next();
+						
+						try {
+							userDao.findUserByCpf(cpf);
+							loadMenuFucturaBank(userDao.findUserByCpf(cpf));
+							break;
+						} catch (DbUnexpectedException e) {
+							System.out.println("User not found! Please Register your user!");
+							break;
+						} catch (DbNotFoundException e) {
+							System.out.println("User not found! Please Register your user!");
+							break;
+						}
+					case 3:
+						bool = false;
+						break;
+			}
+			}
+			
+		} catch(InputMismatchException e) {
+			System.out.println("Invalid number! Please Restart your application.");
+			throw new DbUnexpectedException(e.getMessage());
+		}
+	}
+	
+	private static void loadMenuFucturaBank(User user) {
+		
+		boolean bool = true;
+		while (bool) {
+			System.out.println("\n=-=-=-=-= Welcome " + user.getName() + " =-=-=-=-="
+					+ "\n1. List all banks available"
+					+ "\n2. Findbank by name"
+					+ "\n3. Findbank by CNPJ"
+					+ "\n4. Register a new BankAccount"
+					+ "\n5. Login account"
+					+ "\n6. Exit");
+			int option = sc.nextInt();
+			
+			switch (option) {
+				case 1:
+					bankDao.findAll().forEach(System.out::println);
+					break;
+				case 2:
+					System.out.println("Name of bank:");
+					String name = sc.next();
+					try {
+						System.out.println(name);
+						bankDao.findByBankName(name);
+						System.out.print("\nNAME: " + bankDao.findByBankName("Santander").getName());
+						System.out.print("\nCNPJ: " + bankDao.findByBankName(name).getCnpj());
+						break;
+					} catch (DbNotFoundException e) {
+						System.out.println("No one bank with this name!");
+						break;
+					} catch (DbUnexpectedException e) {
+						System.out.println("No one bank with this name!");
+						break;
+					}
+				case 3:
+					System.out.println("CNPJ of bank:");
+					String cnpj = sc.next();
+					try {
+						bankDao.findByCnpj(cnpj);
+						System.out.print("\nNAME: " + bankDao.findByCnpj(cnpj).getName());
+						System.out.print("\nCNPJ: " + bankDao.findByCnpj(cnpj).getCnpj());
+						break;
+					} catch (DbNotFoundException e) {
+						System.out.println("No one bank with this CNPJ!");
+						break;
+					} catch (DbUnexpectedException e) {
+						System.out.println("No one bank with this CNPJ!");
+						break;
+					}
+				case 4:
+					System.out.print("\nCPF: ");
+					sc.nextLine();
+					String cpf = sc.nextLine();
+					
+					System.out.print("CNPJ of Bank: ");
+					cnpj = sc.nextLine();
+					
+					System.out.print("Account Number: ");
+					Integer numberAcc = sc.nextInt();
+					
+					System.out.print("Password: ");
+					sc.nextLine();
+					String password = sc.nextLine();
+					
+					System.out.print("Initial depoist: ");
+					Double value = sc.nextDouble();
+					
+					try {
+						accDao.findById(numberAcc);
+						System.out.println("Account already Registered!");
+						break;
+					} catch (DbNotFoundException e) {
+						accDao.insert(new Account(numberAcc, value, password, userDao.findUserByCpf(cpf), bankDao.findByCnpj(cnpj)));
+						System.out.println("\nAccount registered with sucessful!");
+						loadMenuLogged(accDao.findByNumber(numberAcc));
+						break;
+					} catch (DbUnexpectedException e) {
+						accDao.insert(new Account(numberAcc, value, password, userDao.findUserByCpf(cpf), bankDao.findByCnpj(cnpj)));
+						System.out.println("\nAccount registered with sucessful!");
+						loadMenuLogged(accDao.findByNumber(numberAcc));
+						break;
+					}
+					
+				case 5:
+					System.out.print("\nNumber Account: ");
+					numberAcc = sc.nextInt();
+					
+					System.out.print("Owner: ");
+					sc.nextLine();
+					String owner = sc.nextLine();
+					
+					System.out.print("Password: ");
+					password = sc.nextLine();
+					
+					try {
+						accDao.findByNumber(numberAcc);
+						if(accDao.findByNumber(numberAcc).getPassword().equals(password) 
+								&& accDao.findByNumber(numberAcc).getUser().getName().equals(owner)) {
+							loadMenuLogged(accDao.findByNumber(numberAcc));
+						}
+						
+					} catch (DbNotFoundException e) {
+						System.out.println("Not Found Account, please register a new account");
+						break;
+					} catch (DbUnexpectedException e) {
+						System.out.println("Not Found Account, please register a new account");
+						break;
+					}
+					
+					break;
+				case 6:
+					bool = false;
+					break;
+			}
+		}
+	}
+	
+	private static void loadMenuLogged(Account acc) {
+		boolean bool = true;
+		while(bool) {
+			System.out.println("=-=-=-=-= Welcome to your account =-=-=-=-="
+					+ "\n1. Account informations."
+					+ "\n2. Transfer values."
+					+ "\n3. Exit");
+			Integer option = sc.nextInt();
+			switch(option) {
+				case 1:
+					System.out.println(accDao.findById(acc.getId()));
+					break;
+				case 2:
+					System.out.println("\nValue to transfer: ");
+					Double value = sc.nextDouble();
+					
+					System.out.println("\nTarget number account: ");
+					Integer numberAccount = sc.nextInt();
+					
+					try {
+						accDao.transferValue(acc.getNumAccount(), numberAccount, value);
+					} catch (DbNotFoundException e) {
+						System.out.println("Not Found Account. Please try again.");
+						break;
+					} catch (DbUnexpectedException e) {
+						System.out.println("Unexpected error. Please try again.");
+						break;
+					} catch (DbAccountBalanceException e) {
+						System.out.println("Balance not enough.");
+						break;
+					}
+				case 3:
+					bool = false;
+					break;
+			}
+		}
+	}
+
 }

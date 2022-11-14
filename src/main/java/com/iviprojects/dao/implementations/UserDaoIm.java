@@ -67,8 +67,6 @@ public class UserDaoIm implements UserDao {
 				query.executeUpdate();
 			}
 
-			em.remove(user);
-
 			em.getTransaction().commit();
 		} catch (Exception e) {
 			throw new DbUnexpectedException(e.getMessage());

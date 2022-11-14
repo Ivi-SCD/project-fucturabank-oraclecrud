@@ -21,7 +21,7 @@ public class Bank {
 	@Column(name = "ID_BANK", nullable = false)
 	private Integer id;
 
-	@Column(name = "NM_BANK", nullable = false, length = 30)
+	@Column(name = "BANKNAME", nullable = false, length = 30)
 	private String name;
 
 	@Column(name = "CNPJ", nullable = false, length = 14)

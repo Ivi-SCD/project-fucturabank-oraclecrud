@@ -63,11 +63,9 @@ public class BankDaoIm implements BankDao {
 
 			Bank bank = findById(id);
 			if (bank != null) {
-				Query query = em.createNativeQuery("DELETE FROM TB_BANK WHERE USER_ID = " + id);
+				Query query = em.createNativeQuery("DELETE FROM TB_BANK WHERE ID_BANK = " + id);
 				query.executeUpdate();
 			}
-
-			em.remove(bank);
 
 			em.getTransaction().commit();
 		} catch (Exception e) {
@@ -91,7 +89,7 @@ public class BankDaoIm implements BankDao {
 	@Override
 	public Bank findByBankName(String name) {
 		try {
-			Query query = em.createQuery("SELECT b FROM Bank b WHERE NM_BANK = " + name, Bank.class);
+			Query query = em.createQuery("SELECT b FROM Bank b WHERE BANKNAME = '" + name + "'", Bank.class);
 			return queryToBank(query);
 		} catch (Exception e) {
 			throw new DbUnexpectedException(e.getMessage());
@@ -101,7 +99,7 @@ public class BankDaoIm implements BankDao {
 	@Override
 	public Bank findByCnpj(String cnpj) {
 		try {
-			Query query = em.createQuery("SELECT u FROM User u WHERE CNPJ = " + cnpj, Bank.class);
+			Query query = em.createQuery("SELECT b FROM Bank b WHERE CNPJ = " + cnpj, Bank.class);
 			return queryToBank(query);
 		} catch (Exception e) {
 			throw new DbUnexpectedException(e.getMessage());

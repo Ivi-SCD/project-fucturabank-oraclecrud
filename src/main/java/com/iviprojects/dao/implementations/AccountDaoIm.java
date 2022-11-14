@@ -27,7 +27,7 @@ public class AccountDaoIm implements AccountDao {
 	public void insert(Account ObjType) {
 		try {
 			em.getTransaction().begin();
-			em.persist(ObjType);
+			em.merge(ObjType);
 			em.getTransaction().commit();
 		} catch (PersistenceException e) {
 			throw new DbPersistenceException(e.getMessage());
@@ -70,8 +70,6 @@ public class AccountDaoIm implements AccountDao {
 				Query query = em.createNativeQuery("DELETE FROM TB_ACCOUNT WHERE ID_ACCOUNT = " + id);
 				query.executeUpdate();
 			}
-
-			em.remove(account);
 
 			em.getTransaction().commit();
 		} catch (Exception e) {
@@ -127,10 +125,7 @@ public class AccountDaoIm implements AccountDao {
 		try {
 			em.getTransaction().begin();
 			Account acc = findByNumber(numAcc);
-			if(value > findByNumber(numAcc).getBalance()) {
-				throw new DbAccountBalanceException(acc);
-			}
-			acc.setBalance(acc.getBalance() - value);
+			acc.setBalance(acc.getBalance() + value);
 			em.merge(acc);
 			em.getTransaction().commit();
 		} catch (Exception e) {
