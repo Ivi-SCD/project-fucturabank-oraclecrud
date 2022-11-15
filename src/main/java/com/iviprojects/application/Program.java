@@ -13,6 +13,7 @@ import com.iviprojects.dao.UserDao;
 import com.iviprojects.entities.Account;
 import com.iviprojects.entities.Bank;
 import com.iviprojects.entities.User;
+import com.iviprojects.util.connection.ConnectionFactory;
 import com.iviprojects.util.database.DbAccountBalanceException;
 import com.iviprojects.util.database.DbNotFoundException;
 import com.iviprojects.util.database.DbUnexpectedException;
@@ -24,15 +25,19 @@ public class Program {
 	static BankDao bankDao = DaoFactory.createBankDao();
 	static AccountDao accDao = DaoFactory.createAccountDao();
 	
-	public static void main(String[] args) throws ParseException {
+	public static void main(String[] args) throws ParseException, DbNotFoundException {
 		
 		instantiateBanks();
 		
 		/*
-		 * Developed by: Ivisson Pereira
+		 * @author: Ivisson Pereira
 		 */
 		
 		loadMenu();
+		
+		
+		sc.close();
+		ConnectionFactory.closeConnections();
 	}
 	
 	private static void instantiateBanks () {
@@ -177,12 +182,12 @@ public class Program {
 						break;
 					} catch (DbNotFoundException e) {
 						accDao.insert(new Account(numberAcc, value, password, userDao.findUserByCpf(cpf), bankDao.findByCnpj(cnpj)));
-						System.out.println("\nAccount registered with sucessful!");
+						System.out.println("\nAccount registered with sucessful!\n");
 						loadMenuLogged(accDao.findByNumber(numberAcc));
 						break;
 					} catch (DbUnexpectedException e) {
 						accDao.insert(new Account(numberAcc, value, password, userDao.findUserByCpf(cpf), bankDao.findByCnpj(cnpj)));
-						System.out.println("\nAccount registered with sucessful!");
+						System.out.println("\nAccount registered with sucessful!\n");
 						loadMenuLogged(accDao.findByNumber(numberAcc));
 						break;
 					}
@@ -199,10 +204,10 @@ public class Program {
 					password = sc.nextLine();
 					
 					try {
-						accDao.findByNumber(numberAcc);
-						if(accDao.findByNumber(numberAcc).getPassword().equals(password) 
-								&& accDao.findByNumber(numberAcc).getUser().getName().equals(owner)) {
-							loadMenuLogged(accDao.findByNumber(numberAcc));
+						Account acc = accDao.findByNumber(numberAcc);
+						if(acc.getPassword().equals(password) 
+								&& acc.getUser().getName().equals(owner)) {
+							loadMenuLogged(acc);
 						}
 						
 					} catch (DbNotFoundException e) {

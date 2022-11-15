@@ -115,7 +115,8 @@ public class Account {
 
 	@Override
 	public String toString() {
-		return "Account [id=" + id + ", numAccount=" + numAccount + ", balance=" + balance + ", password=" + password
-				+ ", user=" + user + ", bank=" + bank + "]";
+		return "Number Account: " + numAccount + " | Balance: " + balance 
+				+ "\nUser CPF: " + user.getCpf() 
+				+ "\nCNPJ Bank: " + bank.getCnpj() + " | Name Bank:" + bank.getName();
 	}
 }
