@@ -25,7 +25,7 @@ public class Program {
 	static BankDao bankDao = DaoFactory.createBankDao();
 	static AccountDao accDao = DaoFactory.createAccountDao();
 	
-	public static void main(String[] args) throws ParseException, DbNotFoundException {
+	public static void main(String[] args) throws ParseException {
 		
 		instantiateBanks();
 		
