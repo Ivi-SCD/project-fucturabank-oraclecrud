@@ -136,7 +136,7 @@ public class AccountDaoIm implements AccountDao {
 	@Override
 	public List <User> findAccountsByUser(User user) {
 		try {
-			TypedQuery <User> query = em.createQuery("SELECT u FROM User u WHERE ID_USER" + user.getId(), User.class);
+			TypedQuery <User> query = em.createQuery("SELECT u FROM User u WHERE ID_USER = " + user.getId(), User.class);
 			return queryListToUserList(query);
 		} catch (Exception e) {
 			throw new DbUnexpectedException(e.getMessage());
@@ -146,7 +146,7 @@ public class AccountDaoIm implements AccountDao {
 	@Override
 	public List <Bank> findAccountsByBank(Bank bank) {
 		try {
-			TypedQuery <Bank> query = em.createQuery("SELECT b FROM Bank b WHERE ID_BANK" + bank.getId(), Bank.class);
+			TypedQuery <Bank> query = em.createQuery("SELECT b FROM Bank b WHERE ID_BANK = " + bank.getId(), Bank.class);
 			return queryListToUserList(query);
 		} catch (Exception e) {
 			throw new DbUnexpectedException(e.getMessage());
