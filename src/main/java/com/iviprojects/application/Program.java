@@ -131,9 +131,8 @@ public class Program {
 					System.out.println("Name of bank:");
 					String name = sc.next();
 					try {
-						System.out.println(name);
 						bankDao.findByBankName(name);
-						System.out.print("\nNAME: " + bankDao.findByBankName("Santander").getName());
+						System.out.print("\nNAME: " + bankDao.findByBankName(name).getName());
 						System.out.print("\nCNPJ: " + bankDao.findByBankName(name).getCnpj());
 						break;
 					} catch (DbNotFoundException e) {
@@ -196,9 +195,9 @@ public class Program {
 					System.out.print("\nNumber Account: ");
 					numberAcc = sc.nextInt();
 					
-					System.out.print("Owner: ");
+					System.out.print("CPF owner: ");
 					sc.nextLine();
-					String owner = sc.nextLine();
+					cpf = sc.nextLine();
 					
 					System.out.print("Password: ");
 					password = sc.nextLine();
@@ -206,8 +205,10 @@ public class Program {
 					try {
 						Account acc = accDao.findByNumber(numberAcc);
 						if(acc.getPassword().equals(password) 
-								&& acc.getUser().getName().equals(owner)) {
+								&& acc.getUser().getCpf().equals(cpf) && acc.getNumAccount().equals(numberAcc)) {
 							loadMenuLogged(acc);
+						} else {
+							System.out.println("\nPlease try again.\n");
 						}
 						
 					} catch (DbNotFoundException e) {
